@@ -35,9 +35,9 @@ public class AddContactActivity extends Activity {
 	public static Context context;
 	public static ListView listView;
 	public static Activity activity;
-	
 	public static ArrayList<States> contactList = new ArrayList<States>();
 	public static MyCustomAdapter dataAdapter = null;
+	
     public static boolean isRunning;
     public static boolean localDBExist;
     
@@ -69,31 +69,24 @@ public class AddContactActivity extends Activity {
 	protected void onDestroy(){
 		super.onDestroy();
 		Log.d("AddContactActivity","Estoy en el onDestroy");
-		isRunning = false;
-		
+		isRunning = false;	
 	}
 	
 	private void displayListView() {
 		
 		contactList.clear();
-		try{
-			DatabaseHandler db = new DatabaseHandler(context);
-			List<Contact> contacts = db.getAllContacts();
-			db.close();
-			
-			for (Contact cn : contacts) {
-				Log.d("AddContactActivity Creating List","User: "+ cn.getUsuario() + " Contact: "+ cn.getContacto() +" State: "+ cn.getState());
-				if(cn.getUsuario().equals(LoginActivity.pref.getString("username", "default")+"@localhost")){
-					States state = new States(cn.getContacto(), cn.getState());
-					contactList.add(state);
-					Log.d("AddContactActivity Creating List","LocalUser: " +cn.getUsuario()+ " Contact: " + cn.getContacto() + " ID: " + cn.getID() + " State: " + cn.getState() );
-				}
-			}
-		}catch(Exception e){
-			Log.d("AddContactDB", "Fail :(");
-			e.printStackTrace();
-		}
 
+		DatabaseHandler db = new DatabaseHandler(context);
+		List<Contact> contacts = db.getAllContacts();
+		db.close();
+			
+		for (Contact cn : contacts) {
+			if(cn.getUsuario().equals(LoginActivity.pref.getString("username", "default")+"@localhost")){
+				States state = new States(cn.getContacto(), cn.getState());
+				contactList.add(state);
+			}
+		}
+		
 		// create an ArrayAdaptar from the String Array
 		dataAdapter = new MyCustomAdapter(context, R.layout.state_info, contactList);
 		listView = (ListView) findViewById(R.id.listView1);
