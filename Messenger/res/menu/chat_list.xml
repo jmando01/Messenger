@@ -1,0 +1,50 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.messenger.ChatListActivity" >
+
+    <item
+        android:id="@+id/chatList"
+        android:orderInCategory="3"
+        android:onClick="chatListBtn"
+        android:title="chatList"
+        android:icon="@drawable/chatc"
+        android:showAsAction="always"/>
+    
+    
+    <item 
+        android:id="@+id/status"
+        android:icon="@drawable/estatus"
+        android:title="Status"
+        android:onClick="StatusBtn"
+        android:orderInCategory="1"
+        android:showAsAction="always"
+          />
+    
+    <item 
+        android:id="@+id/perfil"
+        android:icon="@drawable/perfil"
+        android:title="Perfil"
+        android:onClick="PerfilBtn"
+        android:orderInCategory="2"
+        android:showAsAction="always"
+          />
+          
+    <item 
+        android:id="@+id/contactos"
+        android:icon="@drawable/addcontact"
+        android:title="contactos"
+        android:onClick="BotonDelActionBar"
+        android:orderInCategory="5"
+        android:showAsAction="always"
+          />
+    <item 
+        android:id="@+id/search"
+        android:icon="@drawable/contactlist"
+        android:title="search"
+        android:onClick="ContactBtn"
+        android:orderInCategory="4"
+        android:showAsAction="always"
+          />
+
+</menu>
