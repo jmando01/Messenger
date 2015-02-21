@@ -109,9 +109,7 @@ public class AddContactActivity extends Activity {
 	public static void updateAddUserList(String contact){
 		States state = new States(contact, false);
 		dataAdapter.add(state);
-		Toast.makeText(context,
-				"The user: " + contact +". has added you.", Toast.LENGTH_LONG)
-				.show();
+		Toast.makeText(context, "The user: " + contact +". has added you.", Toast.LENGTH_LONG).show();
 	}
 
 	public class MyCustomAdapter extends ArrayAdapter<States> {

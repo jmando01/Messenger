@@ -719,7 +719,7 @@ public void ClearMsjCounter(String contact, boolean priva)
 	                	
 	                	DatabaseHandler db = new DatabaseHandler(context);
 						
-						db.addMessage(new MessageDB(fromName, LoginActivity.pref.getString("username", "default")+"@localhost", actualTime, message.getBody()));
+						db.addMessage(new MessageDB(fromName, LoginActivity.pref.getString("username", "default")+"@localhost", actualTime, message.getBody(), priva));
 						db.close();
 						
 						DatabaseHandler ndb = new DatabaseHandler(context);

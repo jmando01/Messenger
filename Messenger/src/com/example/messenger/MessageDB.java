@@ -8,6 +8,7 @@ public class MessageDB {
 	private String _tojid;
 	private String _sentdate;
 	private String _body;
+	private boolean _priva;
 		
 	// Empty constructor
 	public MessageDB(){
@@ -15,20 +16,22 @@ public class MessageDB {
 	}
 		
 	// constructor
-	public MessageDB(int id, String fromjid, String tojid, String sentdate, String body){
+	public MessageDB(int id, String fromjid, String tojid, String sentdate, String body, boolean priva){
 		this._id = id;
 		this._fromjid = fromjid;
 		this._tojid = tojid;
 		this._sentdate = sentdate;
 		this._body = body;
+		this._priva = priva;
 	}
 		
 	// constructor
-	public MessageDB(String fromjid, String tojid, String sentdate, String body){
+	public MessageDB(String fromjid, String tojid, String sentdate, String body, boolean priva){
 		this._fromjid = fromjid;
 		this._tojid = tojid;
 		this._sentdate = sentdate;
 		this._body = body;
+		this._priva = priva;
 	}
 		
 	// getting ID
@@ -79,5 +82,15 @@ public class MessageDB {
 	// setting Body
 	public void setBody(String body){
 		this._body = body;
+	}
+	
+	// getting Priva
+	public boolean isPrivate(){
+		return this._priva;
+	}
+						
+	// setting Priva
+	public void setPrivate(boolean priva){
+		this._priva = priva;
 	}
 }

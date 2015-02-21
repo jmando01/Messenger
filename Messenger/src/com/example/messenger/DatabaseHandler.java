@@ -64,7 +64,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 				+ KEY_FROMJID + " TEXT,"
 				+ KEY_TOJID + " TEXT,"
 				+ KEY_SENTDATE + " TEXT,"
-				+ KEY_BODY + " TEXT "+ ")";
+				+ KEY_BODY + " TEXT,"
+				+ KEY_STATE + " INTEGER "+ ")";
 		db.execSQL(CREATE_MESSAGE_ARCHIVE_TABLE);
 		
 		String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_CONTACTS + "("
@@ -111,7 +112,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		values.put(KEY_TOJID, message.getToJid()); // Contact Phone
 		values.put(KEY_SENTDATE, message.getSentDate());
 		values.put(KEY_BODY, message.getBody());
-
+		values.put(KEY_STATE, (message.isPrivate()) ? 1 : 0);
+		
 		// Inserting Row
 		db.insert(MESSAGE_ARCHIVE, null, values);
 		db.close(); // Closing database connection
@@ -162,13 +164,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 
 		Cursor cursor = db.query(MESSAGE_ARCHIVE, new String[] { KEY_ID,
-				KEY_FROMJID, KEY_TOJID, KEY_SENTDATE, KEY_BODY  }, KEY_ID + "=?",
+				KEY_FROMJID, KEY_TOJID, KEY_SENTDATE, KEY_BODY, KEY_STATE  }, KEY_ID + "=?",
 				new String[] { String.valueOf(id) }, null, null, null, null);
 		if (cursor != null)
 			cursor.moveToFirst();
 
 		MessageDB message = new MessageDB(Integer.parseInt(cursor.getString(0)),
-				cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+				cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), (cursor.getInt(5) != 0) );
 		// return message
 		return message;
 	}
@@ -255,6 +257,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 				message.setToJid(cursor.getString(2));
 				message.setSentDate(cursor.getString(3));
 				message.setBody(cursor.getString(4));
+				message.setPrivate((cursor.getInt(5) != 0));
+				
 				// Adding contact to list
 				messageList.add(message);
 			} while (cursor.moveToNext());
@@ -279,6 +283,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 				contact.setUsuario(cursor.getString(1));
 				contact.setContacto(cursor.getString(2));
 				contact.setState((cursor.getInt(3) != 0));
+				
 				// Adding contact to list
 				contactList.add(contact);
 			} while (cursor.moveToNext());
@@ -343,6 +348,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		values.put(KEY_TOJID, message.getToJid());
 		values.put(KEY_SENTDATE, message.getSentDate());
 		values.put(KEY_BODY, message.getBody());
+		values.put(KEY_STATE, (message.isPrivate()) ? 1 : 0);
 		// updating row
 		return db.update(MESSAGE_ARCHIVE, values, KEY_ID + " = ?",
 				new String[] { String.valueOf(message.getID()) });

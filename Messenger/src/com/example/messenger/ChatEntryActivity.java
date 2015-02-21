@@ -129,7 +129,7 @@ public class ChatEntryActivity extends Activity {
     							adapter.notifyDataSetChanged();
     							CDT.cancel();
     							DatabaseHandler db = new DatabaseHandler(context);
-    			    			db.deleteMessage(new MessageDB(GlobalID, "delete", "delete", "delete", "delete")); 
+    			    			db.deleteMessage(new MessageDB(GlobalID, "delete", "delete", "delete", "delete", priva)); 
     			    			db.close();
             					dialog.cancel();
             				}
@@ -147,7 +147,7 @@ public class ChatEntryActivity extends Activity {
     							adapter.removeItem(oneComment);
     							adapter.notifyDataSetChanged();
     							DatabaseHandler db = new DatabaseHandler(context);
-    			    			db.deleteMessage(new MessageDB(GlobalID, "delete", "delete", "delete", "delete")); 
+    			    			db.deleteMessage(new MessageDB(GlobalID, "delete", "delete", "delete", "delete", priva)); 
     			    			db.close();
     			    			alertDialog.dismiss();
     			    			GlobalID = 0;	
@@ -176,7 +176,7 @@ public class ChatEntryActivity extends Activity {
     						adapter.notifyDataSetChanged();
     						if(oneComment.getID() != -1){
     							DatabaseHandler db = new DatabaseHandler(context);
-        			    		db.deleteMessage(new MessageDB(oneComment.getID(), "delete", "delete", "delete", "delete")); 
+        			    		db.deleteMessage(new MessageDB(oneComment.getID(), "delete", "delete", "delete", "delete", priva)); 
         			    		db.close();
         			    		((Connect) getApplication()).DBDeleteMessage(oneComment.getDate());
     						}
@@ -287,7 +287,7 @@ public class ChatEntryActivity extends Activity {
 						lv.setSelection(lv.getAdapter().getCount()-1);
 	
 						DatabaseHandler db = new DatabaseHandler(context);
-						db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage));
+						db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
 						db.close();
 						((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);
 					}
@@ -327,7 +327,7 @@ public class ChatEntryActivity extends Activity {
 				lv.setSelection(lv.getAdapter().getCount()-1);
 				
 				DatabaseHandler db = new DatabaseHandler(context);
-				db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage));
+				db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
 				db.close();
 				
 				((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);// esto deberia estar dentro de un hilo.
@@ -507,7 +507,7 @@ public class ChatEntryActivity extends Activity {
 				adapter.removeItem(item);
 				adapter.notifyDataSetChanged();
 				DatabaseHandler db = new DatabaseHandler(context);
-    			db.deleteMessage(new MessageDB(ID, "delete", "delete", "delete", "delete")); 
+    			db.deleteMessage(new MessageDB(ID, "delete", "delete", "delete", "delete", priva)); 
     			db.close();
 			}
 		}.start();       
@@ -521,7 +521,7 @@ public class ChatEntryActivity extends Activity {
   		if(GlobalID != 0){
   			CDT.cancel();
   			DatabaseHandler db = new DatabaseHandler(context);
-			db.deleteMessage(new MessageDB(GlobalID, "delete", "delete", "delete", "delete")); 
+			db.deleteMessage(new MessageDB(GlobalID, "delete", "delete", "delete", "delete", priva)); 
 			db.close();
   		}
   	}
