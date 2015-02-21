@@ -54,7 +54,7 @@ public class ChatEntryActivity extends Activity {
 	private static com.example.messenger.ChatArrayAdapter adapter;
 	private static ListView lv;
 	
-	public static String remoteUsername; //Este es el usuario al que se le hace click en la lista de usuarios.
+	public static String remoteUsername;
 	public static TextView status;
 	public static boolean isRunning;
 	public static Context context;
@@ -87,25 +87,8 @@ public class ChatEntryActivity extends Activity {
 		editText1 = (EditText) findViewById(R.id.ipad);	
 		
 		//setContactImage();
-		
-			
-		if(Connect.connectionStatus == false){
-			status.setText("Reconnecting...");
-			
-		}else{
-			roster = ((Connect) this.getApplication()).getConnection().getRoster();
-			if(roster.getPresence(remoteUsername).getType() == Presence.Type.available ){
-				status.setText(roster.getPresence(remoteUsername).getStatus().toString());
-			}else{
-				try {
-					status.setText("Last seen: "+getLastSeen());
-				} catch (Exception e) {
-					status.setText("Offline");
-				}
-			}
-		}
-		
-		
+		setContactStatus();
+
 		lv = (ListView) findViewById(R.id.listView1);
 		lv.setDivider(null);
 		adapter = new ChatArrayAdapter(getApplicationContext(), R.layout.listitem_chat);
@@ -289,12 +272,21 @@ public class ChatEntryActivity extends Activity {
 					textMessage = textMessage + privacy + "00";
 					if(!(textMessage.equals("")) && (textMessage.length() > 3)){
 						((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
-						adapter.add(new OneComment(false, editText1.getText().toString()));
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						
+						DatabaseHandler ndb = new DatabaseHandler(context);
+						List<MessageDB> messages = ndb.getAllMessages(); 
+						int ID = 0;
+						for (MessageDB cn : messages) {
+							ID = cn.getID();
+							Log.d("Connect","ID: "+ ID);
+				        }
+						
+						adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
 						editText1.setText("");
 						lv.setSelection(lv.getAdapter().getCount()-1);
 	
 						DatabaseHandler db = new DatabaseHandler(context);
-						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 						db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage));
 						db.close();
 						((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);
@@ -313,6 +305,40 @@ public class ChatEntryActivity extends Activity {
 		
 	}
 	
+	public void SendText(View v){
+		if(Connect.connectionStatus != false){
+			textMessage = editText1.getText().toString();
+			textMessage = textMessage + privacy + "00";
+			if(!(textMessage.equals("")) && (textMessage.length() > 3)){ //Aqui se puede eliminar la parte de que si no esta vacio.
+				//Esta parte deberia ir dentro de un try en caso de que el mensaje no se envie.
+				((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);// creo que esta parte deberia de estar dentro de un hilo tambien.
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				
+				DatabaseHandler ndb = new DatabaseHandler(context);
+				List<MessageDB> messages = ndb.getAllMessages(); 
+				int ID = 0;
+				for (MessageDB cn : messages) {
+					ID = cn.getID();
+					Log.d("Connect","ID: "+ ID);
+		        }
+				
+				adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
+				editText1.setText("");
+				lv.setSelection(lv.getAdapter().getCount()-1);
+				
+				DatabaseHandler db = new DatabaseHandler(context);
+				db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage));
+				db.close();
+				
+				((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);// esto deberia estar dentro de un hilo.
+			}
+		}else{
+			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
+        	Toast.LENGTH_LONG).show();
+			status.setText("Reconnecting...");
+		}
+	}
+	
 	public String getLastSeen() throws XMPPException{
         LastActivity activity = LastActivityManager.getLastActivity(((Connect) getApplication()).getConnection(), remoteUsername);
             
@@ -326,6 +352,24 @@ public class ChatEntryActivity extends Activity {
       	Log.d("LAST ACTIVITY2", offlineTimeStamp );
       	return offlineTimeStamp;
     }
+	
+	public void setContactStatus(){
+		
+		if(Connect.connectionStatus == false){
+			status.setText("Reconnecting...");			
+		}else{
+			roster = ((Connect) this.getApplication()).getConnection().getRoster();
+			if(roster.getPresence(remoteUsername).getType() == Presence.Type.available ){
+				status.setText(roster.getPresence(remoteUsername).getStatus().toString());
+			}else{
+				try {
+					status.setText("Last seen: "+getLastSeen());
+				} catch (Exception e) {
+					status.setText("Offline");
+				}
+			}
+		}
+	}
 	
 	public void setContactImage(){
 		
@@ -411,32 +455,6 @@ public class ChatEntryActivity extends Activity {
 		}
 	}
 	
-	public void SendText(View v){
-		if(Connect.connectionStatus != false){
-			textMessage = editText1.getText().toString();
-			textMessage = textMessage + privacy + "00";
-			if(!(textMessage.equals("")) && (textMessage.length() > 3)){ //Aqui se puede eliminar la parte de que si no esta vacio.
-				//Esta parte deberia ir dentro de un try en caso de que el mensaje no se envie.
-				((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);// creo que esta parte deberia de estar dentro de un hilo tambien.
-				adapter.add(new OneComment(false, editText1.getText().toString()));
-				editText1.setText("");
-				lv.setSelection(lv.getAdapter().getCount()-1);
-				
-				DatabaseHandler db = new DatabaseHandler(context);
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage));
-				db.close();
-				
-				((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);// esto deberia estar dentro de un hilo.
-			}
-		}else{
-			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
-        	Toast.LENGTH_LONG).show();
-			status.setText("Reconnecting...");
-		}
-	}
-	
-
 	public static void updateStatus(String remoteuser, Presence presence){
 		String state = new String();
 		
