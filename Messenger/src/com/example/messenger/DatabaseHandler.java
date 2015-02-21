@@ -267,6 +267,64 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		// return contact list
 		return messageList;
 	}
+	
+	// Getting All priva messages
+		public List<MessageDB> getAllPrivateMessages() {
+			List<MessageDB> messageList = new ArrayList<MessageDB>();
+			// Select All Query
+			String selectQuery = "SELECT  * FROM " + MESSAGE_ARCHIVE + " WHERE " + KEY_STATE + " = '1' ";
+
+			SQLiteDatabase db = this.getWritableDatabase();
+			Cursor cursor = db.rawQuery(selectQuery, null);
+
+			// looping through all rows and adding to list
+			if (cursor.moveToFirst()) {
+				do {
+					MessageDB message = new MessageDB();
+					message.setID(Integer.parseInt(cursor.getString(0)));
+					message.setFromJid(cursor.getString(1));
+					message.setToJid(cursor.getString(2));
+					message.setSentDate(cursor.getString(3));
+					message.setBody(cursor.getString(4));
+					message.setPrivate((cursor.getInt(5) != 0));
+					
+					// Adding contact to list
+					messageList.add(message);
+				} while (cursor.moveToNext());
+			}
+
+			// return contact list
+			return messageList;
+		}
+		
+		// Getting All priva messages
+				public List<MessageDB> getAllNonPrivateMessages() {
+					List<MessageDB> messageList = new ArrayList<MessageDB>();
+					// Select All Query
+					String selectQuery = "SELECT  * FROM " + MESSAGE_ARCHIVE + " WHERE " + KEY_STATE + " = '0' ";
+
+					SQLiteDatabase db = this.getWritableDatabase();
+					Cursor cursor = db.rawQuery(selectQuery, null);
+
+					// looping through all rows and adding to list
+					if (cursor.moveToFirst()) {
+						do {
+							MessageDB message = new MessageDB();
+							message.setID(Integer.parseInt(cursor.getString(0)));
+							message.setFromJid(cursor.getString(1));
+							message.setToJid(cursor.getString(2));
+							message.setSentDate(cursor.getString(3));
+							message.setBody(cursor.getString(4));
+							message.setPrivate((cursor.getInt(5) != 0));
+							
+							// Adding contact to list
+							messageList.add(message);
+						} while (cursor.moveToNext());
+					}
+
+					// return contact list
+					return messageList;
+				}
 		
 	// Getting All Contacts
 	public List<Contact> getAllContacts() {

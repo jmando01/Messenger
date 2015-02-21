@@ -423,11 +423,42 @@ public class ChatEntryActivity extends Activity {
 	
 	public void getHistory(){
 		
-		if(!priva){
+		if(priva){
 			DatabaseHandler db = new DatabaseHandler(context);
-			List<MessageDB> messages = db.getAllMessages(); 
+			List<MessageDB> messages = db.getAllPrivateMessages(); 
 			db.close();
 			for (MessageDB cn : messages) {	
+				Log.d("ChatEntryActivity","Priva msg:" +cn.getBody());
+				if((cn.getFromJid().equals(remoteUsername)) && (cn.getToJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) || (cn.getFromJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) && (cn.getToJid().equals(remoteUsername))){
+					if((cn.getFromJid().equals(remoteUsername)) && (cn.getToJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost"))){
+						int countDown = Integer.valueOf(cn.getBody().substring(cn.getBody().length() - 2, cn.getBody().length()));
+						if(countDown != 0 && countDown < 60){
+		                	Log.d("ChatEntryActivity", "CountDown: "+ countDown);
+		                	adapter.add(new OneComment(true, "Priva Message", countDown, cn.getID(), cn.getSentDate()));
+		                			
+		                }else if (countDown < 60){
+		                	String ChatMessage = cn.getBody().substring(0, cn.getBody().length() - 3); // esto es para que no muestre el countDown
+		                	adapter.add(new OneComment(true, ChatMessage, 0 , cn.getID(), cn.getSentDate()));
+		                }
+					}else{
+						int countDown = Integer.valueOf(cn.getBody().substring(cn.getBody().length() - 2, cn.getBody().length()));
+						if(countDown == 99){//Esto s epuede quitar mas adelante
+			                Log.d("ChatEntryActivity", "CountDown: "+ countDown);
+			                adapter.add(new OneComment(false, "Priva Message", countDown, cn.getID(), cn.getSentDate()));
+						}else{
+							String ChatMessage = cn.getBody().substring(0, cn.getBody().length() - 3);
+							adapter.add(new OneComment(false, ChatMessage, 0, cn.getID(), cn.getSentDate()));
+						}
+					}
+				}
+			      }
+			lv.setSelection(lv.getAdapter().getCount()-1);
+		}else{
+			DatabaseHandler db = new DatabaseHandler(context);
+			List<MessageDB> messages = db.getAllNonPrivateMessages(); 
+			db.close();
+			for (MessageDB cn : messages) {	
+				Log.d("ChatEntryActivity","NonPriva msg:" +cn.getBody());
 				if((cn.getFromJid().equals(remoteUsername)) && (cn.getToJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) || (cn.getFromJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) && (cn.getToJid().equals(remoteUsername))){
 					if((cn.getFromJid().equals(remoteUsername)) && (cn.getToJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost"))){
 						int countDown = Integer.valueOf(cn.getBody().substring(cn.getBody().length() - 2, cn.getBody().length()));
