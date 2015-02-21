@@ -1149,7 +1149,7 @@ public void ClearMsjCounter(String contact, boolean priva)
 		ArrayList<MessageDB> userMessages = new ArrayList<MessageDB>();
 			
 		DatabaseHandler db = new DatabaseHandler(context);
-		List<MessageDB> messages = db.getAllMessages();
+		List<MessageDB> messages = db.getAllNonPrivateMessages();
 		db.close();
 		for (MessageDB cn : messages) {
 	        	
