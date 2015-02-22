@@ -12,6 +12,7 @@ import org.jivesoftware.smackx.packet.LastActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -230,21 +231,26 @@ public class ChatEntryActivity extends Activity {
 			    			String temp = textMessage;
 			    			textMessage = textMessage + privacy + countDown;
 			    			if(!(textMessage.equals("")) && (textMessage.length() > 3)){
-			    				((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
-			    				Log.d("Privacy","Se envio un mensaje: " + textMessage + ". Para el usuario: " +remoteUsername );
-			    				Toast.makeText(getApplicationContext(), "Priva Message has been sent.",
-						        Toast.LENGTH_LONG).show();
 			    				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			    				
-			    				DatabaseHandler ndb = new DatabaseHandler(context);
-								List<MessageDB> messages = ndb.getAllMessages(); 
+			    				new Thread(new Runnable() {
+			    			        public void run() {
+			    			        	((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
+			    			        }
+			    			    }).start();
+			    				
+			    				Toast.makeText(getApplicationContext(), "Priva Message has been sent.",
+						        Toast.LENGTH_LONG).show();
+			    				
+			    				DatabaseHandler db = new DatabaseHandler(context);
+								List<MessageDB> messages = db.getAllMessages();
+								db.close();
 								int ID = 0;
 								for (MessageDB cn : messages) {
 									ID = cn.getID();
-									Log.d("Connect","ID: "+ ID);
 						        }
 								Log.d("Connect","ID Last ID: "+ ID);
-								ndb.close();
+								
 								adapter.add(new OneComment(false, temp, 99, -1, sdf.format(new Date())));
 								editText1.setText("");
 								lv.setSelection(lv.getAdapter().getCount()-1); 
@@ -278,40 +284,102 @@ public class ChatEntryActivity extends Activity {
 	}
 	
 	public void SendText(View v){
-		if(Connect.connectionStatus != false){
-			textMessage = editText1.getText().toString();
-			textMessage = textMessage + privacy + "00";
-			if(!(textMessage.equals("")) && (textMessage.length() > 3)){ //Aqui se puede eliminar la parte de que si no esta vacio.
-				//Esta parte deberia ir dentro de un try en caso de que el mensaje no se envie.
-				final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				
-				new Thread(new Runnable() {
-			        public void run() {
-			        	((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
-			        	((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);
-			        }
-			    }).start();
+		if (!priva){
+			if(Connect.connectionStatus != false){
+				textMessage = editText1.getText().toString();
+				textMessage = textMessage + privacy + "00";
+				if(!(textMessage.equals("")) && (textMessage.length() > 3)){ //Aqui se puede eliminar la parte de que si no esta vacio.
+					//Esta parte deberia ir dentro de un try en caso de que el mensaje no se envie.
+					final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					
+					new Thread(new Runnable() {
+				        public void run() {
+				        	((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
+				        	((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);
+				        }
+				    }).start();
 
-				DatabaseHandler ndb = new DatabaseHandler(context);
-				List<MessageDB> messages = ndb.getAllMessages(); 
-				int ID = 0;
-				for (MessageDB cn : messages) {
-					ID = cn.getID();
-					Log.d("Connect","ID: "+ ID);
-		        }
-				
-				DatabaseHandler db = new DatabaseHandler(context);
-				db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
-				db.close();
-				
-				adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
-				editText1.setText("");
-				lv.setSelection(lv.getAdapter().getCount()-1);
+					DatabaseHandler ndb = new DatabaseHandler(context);
+					List<MessageDB> messages = ndb.getAllMessages(); 
+					int ID = 0;
+					for (MessageDB cn : messages) {
+						ID = cn.getID();
+			        }
+					Log.d("Connect","ID Last ID: "+ ID);
+					
+					DatabaseHandler db = new DatabaseHandler(context);
+					db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
+					db.close();
+					
+					adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
+					editText1.setText("");
+					lv.setSelection(lv.getAdapter().getCount()-1);
+				}
+			}else{
+				Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
+	        	Toast.LENGTH_LONG).show();
+				status.setText("Reconnecting...");
 			}
 		}else{
-			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
-        	Toast.LENGTH_LONG).show();
-			status.setText("Reconnecting...");
+			if(Connect.connectionStatus != false){
+				textMessage = editText1.getText().toString();
+				textMessage = textMessage + privacy + "03";// se debe agregar un boton para que esto se una constante opcional.
+				if(!(textMessage.equals("")) && (textMessage.length() > 3)){ //Aqui se puede eliminar la parte de que si no esta vacio.
+					//Esta parte deberia ir dentro de un try en caso de que el mensaje no se envie.
+					final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+					if(!adapter.isEmpty()){
+                		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                        alertDialogBuilder.setIcon(R.drawable.ic_launcher);
+            			alertDialogBuilder.setTitle("Warning!");
+            			alertDialogBuilder
+            				.setMessage("You still have unread messages if you continue this message will be deleted.")
+            				.setCancelable(false)
+            				.setPositiveButton("Continue",new DialogInterface.OnClickListener() {
+            					public void onClick(final DialogInterface dialog,int id) {
+            						new Thread(new Runnable() {
+            					        public void run() {
+            					        	((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
+            					        	mHandler.post(new Runnable() {
+            					                public void run() {
+            					                	DatabaseHandler db = new DatabaseHandler(context);
+            					                	for(int i = 0; i<adapter.getCount();i++){
+            					                		db.deleteMessage(new MessageDB(adapter.getItem(i).getID(), "delete", "delete", "delete", "delete", priva)); 
+            					                	}
+            					                	db.close();
+            					                	onBackPressed();
+            					                	dialog.cancel();
+            					                }
+            					            });
+            					        }
+            					    }).start();
+            					}
+            				})
+            				.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+        					public void onClick(DialogInterface dialog,int id) {
+        						dialog.cancel();
+        						}
+            				});
+            			AlertDialog alertDialog = alertDialogBuilder.create();
+            			alertDialog.show();
+                	}else{
+                		new Thread(new Runnable() {
+					        public void run() {
+					        	((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
+					        	mHandler.post(new Runnable() {
+					                public void run() {
+					                	onBackPressed();
+					                }
+					            });
+					        }
+					    }).start();
+                	}    
+				}
+			}else{
+				Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
+	        	Toast.LENGTH_LONG).show();
+				status.setText("Reconnecting...");
+			}
 		}
 	}
 	
