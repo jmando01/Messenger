@@ -268,38 +268,10 @@ public class ChatEntryActivity extends Activity {
 			// If the event is a key-down event on the "enter" button
 				if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER && Connect.connectionStatus != false)) {
 					// Perform action on key press
-					textMessage = editText1.getText().toString();
-					textMessage = textMessage + privacy + "00";
-					if(!(textMessage.equals("")) && (textMessage.length() > 3)){
-						((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
-						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						
-						DatabaseHandler ndb = new DatabaseHandler(context);
-						List<MessageDB> messages = ndb.getAllMessages(); 
-						int ID = 0;
-						for (MessageDB cn : messages) {
-							ID = cn.getID();
-							Log.d("Connect","ID: "+ ID);
-				        }
-						
-						adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
-						editText1.setText("");
-						lv.setSelection(lv.getAdapter().getCount()-1);
-	
-						DatabaseHandler db = new DatabaseHandler(context);
-						db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
-						db.close();
-						((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);
-					}
-						return true;
-								
+					SendText(v);
+					return true;			
 				}
-				if((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER && Connect.connectionStatus == false)){
-				Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
-			    Toast.LENGTH_LONG).show();
-				status.setText("Reconnecting...");
-				}
-						return false;
+				return false;
 			}
 		});
 		
