@@ -22,14 +22,6 @@
             android:text="Hello Bubbles!"
             android:textColor="@android:color/primary_text_light" />
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignRight="@+id/comment"
-            android:text="TextView" />
-
     </RelativeLayout>
 
 </RelativeLayout>

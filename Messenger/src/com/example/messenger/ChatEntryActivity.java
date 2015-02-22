@@ -283,9 +283,15 @@ public class ChatEntryActivity extends Activity {
 			textMessage = textMessage + privacy + "00";
 			if(!(textMessage.equals("")) && (textMessage.length() > 3)){ //Aqui se puede eliminar la parte de que si no esta vacio.
 				//Esta parte deberia ir dentro de un try en caso de que el mensaje no se envie.
-				((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);// creo que esta parte deberia de estar dentro de un hilo tambien.
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				
+				new Thread(new Runnable() {
+			        public void run() {
+			        	((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
+			        	((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);
+			        }
+			    }).start();
+
 				DatabaseHandler ndb = new DatabaseHandler(context);
 				List<MessageDB> messages = ndb.getAllMessages(); 
 				int ID = 0;
@@ -294,15 +300,13 @@ public class ChatEntryActivity extends Activity {
 					Log.d("Connect","ID: "+ ID);
 		        }
 				
-				adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
-				editText1.setText("");
-				lv.setSelection(lv.getAdapter().getCount()-1);
-				
 				DatabaseHandler db = new DatabaseHandler(context);
 				db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
 				db.close();
 				
-				((Connect) getApplication()).DBInsertMessage(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername, sdf.format(new Date()), textMessage);// esto deberia estar dentro de un hilo.
+				adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
+				editText1.setText("");
+				lv.setSelection(lv.getAdapter().getCount()-1);
 			}
 		}else{
 			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
