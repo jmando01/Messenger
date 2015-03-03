@@ -1,5 +1,6 @@
 package com.example.messenger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
@@ -35,12 +36,22 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
+import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.ReportedData.Row;
+import org.jivesoftware.smackx.bytestreams.socks5.provider.BytestreamsProvider;
+import org.jivesoftware.smackx.filetransfer.FileTransfer.Status;
+import org.jivesoftware.smackx.filetransfer.FileTransferListener;
+import org.jivesoftware.smackx.filetransfer.FileTransferManager;
+import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
+import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
+import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.ping.packet.Ping;
 import org.jivesoftware.smackx.ping.packet.Pong;
+import org.jivesoftware.smackx.provider.DiscoverInfoProvider;
+import org.jivesoftware.smackx.provider.DiscoverItemsProvider;
 import org.jivesoftware.smackx.search.UserSearchManager;
 import android.app.Application;
 import android.app.NotificationManager;
@@ -49,6 +60,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -174,6 +186,7 @@ public class Connect extends Application {
 				setConnectionListener();
 	        	setRosterListener();
 	        	setRosterExists();
+	        	setFileTransferListener();
 	        	DBGetChats();
 			}
 		}  
@@ -537,6 +550,77 @@ public class Connect extends Application {
 		
          
         
+	}
+	
+	
+	public void setFileTransferListener(){
+		
+		ProviderManager.getInstance().addIQProvider("query","http://jabber.org/protocol/bytestreams", new BytestreamsProvider());
+		ProviderManager.getInstance().addIQProvider("query","http://jabber.org/protocol/disco#items", new DiscoverItemsProvider());
+		ProviderManager.getInstance().addIQProvider("query","http://jabber.org/protocol/disco#info", new DiscoverInfoProvider());
+		
+		FileTransferManager manager = new FileTransferManager(connection);
+		manager.addFileTransferListener(new FileTransferListener() {
+		   public void fileTransferRequest(final FileTransferRequest request) {
+		      new Thread(){
+		         @Override
+		         public void run() {
+		            IncomingFileTransfer transfer = request.accept();
+		            File mf = Environment.getExternalStorageDirectory();
+		            File file = new File(mf.getAbsoluteFile()+"/DCIM/Camera/" + transfer.getFileName());
+		            try{
+		                transfer.recieveFile(file);
+		                while(!transfer.isDone()) {
+		                   try{
+		                      Thread.sleep(1000L);
+		                   }catch (Exception e) {
+		                      Log.e("", e.getMessage());
+		                   }
+		                   if(transfer.getStatus().equals(Status.error)) {
+		                      Log.e("ERROR!!! ", transfer.getError() + "");
+		                   }
+		                   if(transfer.getException() != null) {
+		                      transfer.getException().printStackTrace();
+		                   }
+		                }
+		             }catch (Exception e) {
+		                Log.e("", e.getMessage());
+		            }
+		         };
+		       }.start();
+		    }
+		 });
+	}
+	
+	public void fileTransfer(String filenameWithPath, String contact){
+		
+		FileTransferManager manager = new FileTransferManager(connection);
+		OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer(contact+"/Smack");
+		File file = new File(filenameWithPath);
+		try {
+		   transfer.sendFile(file, "test_file");
+		} catch (XMPPException e) {
+		   e.printStackTrace();
+		}
+		while(!transfer.isDone()) {
+		   if(transfer.getStatus().equals(Status.error)) {
+		      Log.d("FileTransfer","ERROR!!! " + transfer.getError());
+		   } else if (transfer.getStatus().equals(Status.cancelled)
+		                    || transfer.getStatus().equals(Status.refused)) {
+		      Log.d("FileTransfer","Cancelled!!! " + transfer.getError());
+		   }
+		   try {
+		      Thread.sleep(1000L);
+		   } catch (InterruptedException e) {
+		      e.printStackTrace();
+		   }
+		}
+		if(transfer.getStatus().equals(Status.refused) || transfer.getStatus().equals(Status.error)
+		 || transfer.getStatus().equals(Status.cancelled)){
+		   Log.d("FileTransfer","refused cancelled error " + transfer.getError());
+		} else {
+		   Log.d("FileTransfer","Success");
+		}
 	}
 	
 //Metodo que nos permite tener actualizaciones de tipo presencia
