@@ -322,8 +322,6 @@ public class AddContactActivity extends Activity {
 			}else{
 				Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_LONG).show();
 			}
-	    
-			displayListView();
 			
 		}else{
 			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",

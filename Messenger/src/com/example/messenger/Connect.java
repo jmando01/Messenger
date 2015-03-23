@@ -1061,7 +1061,6 @@ public void ClearMsjCounter(String contact, boolean priva)
             	 
             	 InsertRoster(addUser+"@localhost");
             	 roster.createEntry(addUser + "@localhost", addUser, null); //Lo que esta en null es para saber si pertenece a un grupo
-
 				 Log.d("AddCOntactDB","Add conctact successfull");
              }
 			
