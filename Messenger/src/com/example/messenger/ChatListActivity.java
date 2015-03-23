@@ -364,8 +364,10 @@ public class ChatListActivity extends Activity {
     		for (ChatContact cn : chatContacts) {
     			if((cn.getUser().equals(LoginActivity.pref.getString("username", "default")+"@localhost"))){
     				States state = new States(cn.getID(), cn.getChatContact(), cn.isPrivate());
-    				chatContactList.add(state);
-    				Log.d("ChatListActivity","Local User Contact: "+cn.getChatContact() + "isPrivate: "+cn.isPrivate());
+    				if(isContactBlocked(state.getName())){
+    					chatContactList.add(state);
+    					Log.d("ChatListActivity","Local User Contact: "+cn.getChatContact() + "isPrivate: "+cn.isPrivate());
+    				}
     			}
     		}
   		
@@ -412,6 +414,18 @@ public class ChatListActivity extends Activity {
         	}
     	}  	
     	return fixDate;
+    }
+    
+    public boolean isContactBlocked(String contact){
+    	DatabaseHandler datab = new DatabaseHandler(context);
+		List<Contact> contacts = datab.getAllContacts(); 
+		datab.close();
+		for (Contact cn : contacts) {
+			if((cn.getUsuario().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) && (cn.getContacto().equals(contact))){
+				return cn.getState();
+			}
+		}
+		return false;
     }
     
   	public void BotonDelActionBar(MenuItem item){
