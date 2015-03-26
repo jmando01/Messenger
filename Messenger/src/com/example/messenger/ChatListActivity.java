@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,6 +34,7 @@ public class ChatListActivity extends Activity {
 		public static Context context;
 		public static States st;
 		
+		private Editor ed;
 		private TextView contacts;
 		private TextView lastActivity;
 
@@ -53,6 +55,8 @@ public class ChatListActivity extends Activity {
         context = this;
         mainActivity = this;
         isRunning = true;
+        
+        SyncChatHistory();
     }
     
    /* @Override
@@ -426,6 +430,16 @@ public class ChatListActivity extends Activity {
 			}
 		}
 		return false;
+    }
+    
+    public void SyncChatHistory(){
+    	if(LoginActivity.pref.getBoolean(LoginActivity.pref.getString("username", "default")+"@localhost", true)){
+    		((Connect) this.getApplication()).SyncHistory();
+    		
+    		ed = LoginActivity.pref.edit();
+        	ed.putBoolean(LoginActivity.pref.getString("username", "default")+"@localhost", false);
+    		ed.commit();
+    	}
     }
     
   	public void BotonDelActionBar(MenuItem item){

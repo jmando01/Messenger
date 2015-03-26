@@ -1170,7 +1170,7 @@ public void ClearMsjCounter(String contact, boolean priva)
 	//	contactList.clear();
 	//}
 	
-	//Este es el metodo para conectarse a la base de datos y devolver el historial de mensajes
+	//Este metodo actualmente no se usa
 	public ArrayList<OneComment> getHist( String userA, String userB){
 		history.clear();
 		DBuserA = userA;//+"@localhost"
@@ -1219,6 +1219,38 @@ public void ClearMsjCounter(String contact, boolean priva)
 			
 		return history;
 
+	}
+	
+	public void SyncHistory(){
+		try{
+			Class.forName("oracle.jdbc.driver.OracleDriver").newInstance();
+			DriverManager.setLoginTimeout(0);
+			
+			dbconn = DriverManager.getConnection("jdbc:oracle:thin:@"+HOST+":"+DBPORT+":"+DBNAME, DBUSERNAME, DBPASSWORD);
+			Statement st = dbconn.createStatement();
+			
+			ResultSet resultado = st.executeQuery("select * from MessageList where fromjid = '"+LoginActivity.pref.getString("username", "default")+"@localhost"+"' or tojid = '"+LoginActivity.pref.getString("username", "default")+"@localhost"+"' ORDER BY ID ASC");
+			
+			if (resultado==null){
+				Log.d("Resul", "Null");
+			}
+			
+			while (resultado.next()){
+				Log.d("Connect",resultado.getString(1)+resultado.getString(2)+resultado.getString(3)+resultado.getString(4));
+				DatabaseHandler db = new DatabaseHandler(context);
+				db.addMessage(new MessageDB(resultado.getString(1), resultado.getString(2),resultado.getString(3),resultado.getString(4), false));
+				db.close();
+			}
+					
+			
+			Log.d("Connect", "Sync message history success");
+			st.close();
+			dbconn.close();
+			
+			}catch(Exception e){
+			Log.d("Connect", "Sync message history failed");
+			e.printStackTrace();
+			}
 	}
 	
 	public ArrayList<String> DBUpdateContactList(String DBuserA, String DBuserB ){
