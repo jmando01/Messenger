@@ -173,13 +173,17 @@ public class ChatEntryActivity extends Activity {
 			    builder.setItems(items, new DialogInterface.OnClickListener() {
 			        public void onClick(DialogInterface dialog, int item) {
 			            if(item == 0){
-			            	adapter.removeItem(oneComment);
+			    			adapter.removeItem(oneComment);
     						adapter.notifyDataSetChanged();
     						if(oneComment.getID() != -1){
+								Log.d("DENTRO","DENTRO");
     							DatabaseHandler db = new DatabaseHandler(context);
+    							Log.d("DENTRO",oneComment.getID()+" ");
         			    		db.deleteMessage(new MessageDB(oneComment.getID(), "delete", "delete", "delete", "delete", priva)); 
         			    		db.close();
         			    		((Connect) getApplication()).DBDeleteMessage(oneComment.getDate());
+    			    			String textMessage = oneComment.getComment() + "d" + "00";
+    			    			((Connect) getApplication()).ChatMessage(remoteUsername, textMessage);
     						}
     			    		dialog.dismiss();
 			            }
@@ -299,6 +303,10 @@ public class ChatEntryActivity extends Activity {
 				        }
 				    }).start();
 
+					DatabaseHandler db = new DatabaseHandler(context);
+					db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
+					db.close();
+					
 					DatabaseHandler ndb = new DatabaseHandler(context);
 					List<MessageDB> messages = ndb.getAllMessages(); 
 					int ID = 0;
@@ -306,10 +314,6 @@ public class ChatEntryActivity extends Activity {
 						ID = cn.getID();
 			        }
 					Log.d("Connect","ID Last ID: "+ ID);
-					
-					DatabaseHandler db = new DatabaseHandler(context);
-					db.addMessage(new MessageDB(LoginActivity.pref.getString("username", "default")+"@localhost", remoteUsername,sdf.format(new Date()),textMessage, priva));
-					db.close();
 					
 					adapter.add(new OneComment(false, editText1.getText().toString(), 00, ID, sdf.format(new Date())));
 					editText1.setText("");
@@ -586,6 +590,15 @@ public class ChatEntryActivity extends Activity {
     			db.close();
 			}
 		}.start();       
+	}
+	public static void deleteMessage(String message){
+		List<OneComment> itemList = adapter.getItemList();
+		for(int i = 0; i<itemList.size(); i++){
+			if(itemList.get(i).comment.equals(message)){
+				adapter.removeItem(itemList.get(i));
+				adapter.notifyDataSetChanged();
+			}
+		}
 	}
 	
 	@Override

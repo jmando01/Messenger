@@ -442,6 +442,32 @@ public class ChatListActivity extends Activity {
     	}
     }
     
+    public static void deleteMessageUpdate(String fromName, String message){
+    	
+    	ArrayList<MessageDB> userMessages = new ArrayList<MessageDB>();
+		
+		DatabaseHandler db = new DatabaseHandler(context);
+		List<MessageDB> messages = db.getAllNonPrivateMessages();
+		db.close();
+		for (MessageDB cn : messages) {
+	        	
+			if((cn.getFromJid().equals(fromName)) && (cn.getToJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) || (cn.getFromJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) && (cn.getToJid().equals(fromName))){
+				userMessages.add(cn);
+			}
+	    }
+		
+		String lastMessage = userMessages.get(userMessages.size()-1).getBody().substring(0, userMessages.get(userMessages.size()-1).getBody().length() - 3);;
+		String lastMessageDate = userMessages.get(userMessages.size()-1).getSentDate().toString();
+		
+    	for(int i = 0; i < image_details.size(); i++){
+    		if((fromName.equals(image_details.get(i).getName())) && (image_details.get(i).getMessage().equals(message))){
+    			image_details.get(i).setMessage(lastMessage);
+    			image_details.get(i).setDate(TimeFix(Connect.TimeConverter(lastMessageDate)));
+    		}
+    	}
+    	adapter.notifyDataSetChanged();
+    }
+    
   	public void BotonDelActionBar(MenuItem item){
 		Intent intent = new Intent(this, AddContactActivity.class);
 		startActivity(intent);

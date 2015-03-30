@@ -37,7 +37,7 @@ public class LoginActivity extends ActionBarActivity {
     public static boolean isRunning;
     public static SharedPreferences pref;
     public static Activity loginActivity;
-    public static String localIP = "10.0.0.16";
+    public static String localIP = "jmando01.ddns.net";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

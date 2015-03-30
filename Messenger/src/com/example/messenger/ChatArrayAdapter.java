@@ -41,6 +41,9 @@ public class ChatArrayAdapter extends ArrayAdapter<OneComment> {
 	public OneComment getItem(int index) {
 		return this.countries.get(index);
 	}
+	public List<OneComment> getItemList(){
+		return countries;
+	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;

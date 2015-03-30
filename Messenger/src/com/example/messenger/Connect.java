@@ -801,6 +801,26 @@ public void ClearMsjCounter(String contact, boolean priva)
 	                	int countDown = Integer.valueOf(message.getBody().substring(message.getBody().length() - 2, message.getBody().length()));
 	                	String ChatMessage = message.getBody().substring(0, message.getBody().length() - 3); // esto es para que no muestre el countDown
 	                	
+	                	
+	                	if(privacy.equals("d")){
+	                		//Buscar en la base de datos interna para borrar el mensaje.
+	                		int ID = 0;
+	                		DatabaseHandler db = new DatabaseHandler(context);
+							List<MessageDB> messages = db.getAllMessages(); 
+							for (MessageDB cn : messages) {
+								if((cn.getToJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost") && cn.getFromJid().equals(fromName) || cn.getToJid().equals(fromName) && cn.getFromJid().equals(LoginActivity.pref.getString("username", "default")+"@localhost")) && cn.getBody().substring(0, cn.getBody().length() - 3).equals(ChatMessage)){
+									ID = cn.getID();
+									db.deleteMessage(new MessageDB(ID, "delete", "delete", "delete", "delete", false));
+									db.close();
+									if(ChatEntryActivity.isRunning && ChatEntryActivity.remoteUsername.equals(fromName)){
+										ChatEntryActivity.deleteMessage(ChatMessage);
+									}
+									if(ChatListActivity.isRunning){
+										ChatListActivity.deleteMessageUpdate(fromName, ChatMessage);
+									}
+								}
+					        }
+	                	}else{
 	                	DatabaseHandler db = new DatabaseHandler(context);
 						
 						db.addMessage(new MessageDB(fromName, LoginActivity.pref.getString("username", "default")+"@localhost", actualTime, message.getBody(), priva));
@@ -883,6 +903,7 @@ public void ClearMsjCounter(String contact, boolean priva)
 	                		_Notification(message.getBody(), fromName);
 	        	        }*/
 
+	                	}
 	                }
 	              });
 	          }
