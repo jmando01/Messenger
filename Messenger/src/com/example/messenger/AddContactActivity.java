@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +32,7 @@ public class AddContactActivity extends Activity {
     private String addUser;
     private String toast;
     private String note;
+    private ProgressDialog progress;
     
 	public static Context context;
 	public static ListView listView;
@@ -164,6 +166,10 @@ public class AddContactActivity extends Activity {
 						if(Connect.connectionStatus == true){
 						
 							if (cb.isChecked() == true){
+								progress = new ProgressDialog(context);
+							    progress.setMessage("Wait while adding contact...");
+							    progress.show();
+							    
 								note = "Has been added to the contact list";
 								((Connect) getApplication()).DBUpdateContact(_state.getName(), true);
 							
@@ -186,6 +192,10 @@ public class AddContactActivity extends Activity {
 								db.close();
 								
 							}else{
+								progress = new ProgressDialog(context);
+							    progress.setMessage("Wait while blocking contact...");
+							    progress.show();
+							    
 								note = "Has been eliminated from the contact list";
 								((Connect) getApplication()).DBUpdateContact(_state.getName(), false);
 								ChatListActivity.deleteFromChatList(_state.getName(), true);
@@ -219,6 +229,7 @@ public class AddContactActivity extends Activity {
 
 							_state.setSelected(cb.isChecked());
 							((Connect) getApplication()).Contacts(_state);
+							progress.dismiss();
 						
 						}else{
 							cb.toggle();
@@ -308,6 +319,10 @@ public class AddContactActivity extends Activity {
 
 	public void AddUser(View v){		
 		if(Connect.connectionStatus != false){
+			progress = new ProgressDialog(context);
+		    progress.setMessage("Wait while adding contact...");
+		    progress.show();
+		    
 			addUserEdit = (EditText) findViewById(R.id.adduser);
 			addUser = addUserEdit.getText().toString();
 			addUser = addUser.toLowerCase(Locale.getDefault());
@@ -317,13 +332,16 @@ public class AddContactActivity extends Activity {
 			toast = ((Connect) this.getApplication()).getToast();
 	    	 
 			if(toast == null){
+				progress.dismiss();
 				Toast.makeText(getApplicationContext(), "The user: '" + addUser + "' has been added",
 						Toast.LENGTH_LONG).show();
 			}else{
+				progress.dismiss();
 				Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_LONG).show();
 			}
 			
 		}else{
+			progress.dismiss();
 			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
 		    Toast.LENGTH_LONG).show();
 		}	

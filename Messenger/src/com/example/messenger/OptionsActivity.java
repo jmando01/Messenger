@@ -3,8 +3,13 @@ package com.example.messenger;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.XMPPException;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,13 +23,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
@@ -37,6 +45,8 @@ public class OptionsActivity extends Activity {
 	private Photo photo;
 	private Handler mHandler = new Handler();
 	private Context mContext;
+	private ProgressDialog progress;
+	private Editor ed;
 	
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 	static boolean isRunning;
@@ -156,7 +166,58 @@ public class OptionsActivity extends Activity {
 						            	}
 						            	
 						            	if(item == 1){
+						            		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 						            		
+						            		LinearLayout lila1= new LinearLayout(mContext);
+						            	    lila1.setOrientation(1); //1 is for vertical orientation
+						            	    final EditText input = new EditText(mContext);
+						            	    input.setHint("Type you old passwod");
+						            	    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+						            	    final EditText input1 = new EditText(mContext);
+						            	    input1.setHint("Type you new passwod");
+						            	    input1.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+						            	    final EditText input2 = new EditText(mContext);
+						            	    input2.setHint("Retype you new passwod");
+						            	    input2.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+						            	    lila1.addView(input);
+						            	    lila1.addView(input1);
+						            	    lila1.addView(input2);
+					            			builder.setTitle("Change Password");
+					            			builder.setIcon(R.drawable.ic_launcher);
+					            			builder.setView(lila1);
+
+					            			// Set up the buttons
+					            			builder.setPositiveButton("OK", new DialogInterface.OnClickListener() { 
+					            			    @Override
+					            			    public void onClick(DialogInterface dialog, int which) {
+					            			    	if((input.getText().toString().equals(LoginActivity.pref.getString("password", "default"))) && (input1.getText().toString().equals(input2.getText().toString())) ){
+					            			    		AccountManager am = new AccountManager(((Connect) getApplication()).getConnection());
+								        				try {
+															am.changePassword(input1.getText().toString());
+															ed = LoginActivity.pref.edit();
+															ed.putString("password", input1.getText().toString());
+													    	ed.commit();
+														} catch (XMPPException e) {
+															// TODO Auto-generated catch block
+															e.printStackTrace();
+														}
+					            			    	}else{
+					            			    		Toast.makeText(getApplicationContext(),
+					            			    				"Passwords do not match...", Toast.LENGTH_LONG)
+					        									.show();
+					            			    	}
+					            			        
+					            			    }
+					            			});
+					            			builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					            			    @Override
+					            			    public void onClick(DialogInterface dialog, int which) {
+					            			        dialog.cancel();
+					            			    }
+					            			});
+
+					            			builder.show();
+						            			
 						            	}
 						            	
 						            	if(item == 2){
@@ -243,6 +304,10 @@ public class OptionsActivity extends Activity {
 			        
 			        photo = new Photo(LoginActivity.pref.getString("username", "default")+"@localhost", Bitmap.createScaledBitmap(imageBitmap, 300, 350, true), date);
 
+			        progress = new ProgressDialog(this);
+				    progress.setMessage("Wait while loading profile image...");
+				    progress.show();
+			        
 					UpdloadThreat(imageLocation, date);
 			    }
 			} 
@@ -261,6 +326,10 @@ public class OptionsActivity extends Activity {
 	        imageBitmap = BitmapFactory.decodeFile(tempPath, btmapOptions);
 	        photo = new Photo(LoginActivity.pref.getString("username", "default")+"@localhost", Bitmap.createScaledBitmap(imageBitmap, 300, 350, true), date);           
  
+	        progress = new ProgressDialog(this);
+		    progress.setMessage("Wait while loading profile image...");
+		    progress.show();
+	        
 		    UpdloadThreat(tempPath, date);
 
 		}
@@ -310,7 +379,9 @@ public class OptionsActivity extends Activity {
 					    if(OptionsActivity.isRunning){
 					    	mHandler.post(new Runnable() {
 			 	                public void run() {
-					    	imageView.setImageBitmap(Bitmap.createScaledBitmap(imageBitmap, 300, 350, true));
+					    	imageView.setImageBitmap(Bitmap.createScaledBitmap(imageBitmap, 200, 250, true));
+
+					    	progress.dismiss();
 			 	                }	
 			 	            });
 					    }
