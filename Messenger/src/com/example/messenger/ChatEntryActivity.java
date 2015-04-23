@@ -1,5 +1,6 @@
 package com.example.messenger;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,13 +18,21 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.provider.MediaStore.MediaColumns;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
@@ -50,10 +59,13 @@ public class ChatEntryActivity extends Activity {
 	private TextView remoteUser;
 	private TextView localUser;
 	private String privacy;
+	private boolean takeWithCamera = false;
+	private String user;
 	
 	private static boolean priva;
 	private static com.example.messenger.ChatArrayAdapter adapter;
 	private static ListView lv;
+	static final int REQUEST_IMAGE_CAPTURE = 1;
 	
 	public static String remoteUsername;
 	public static TextView status;
@@ -70,6 +82,7 @@ public class ChatEntryActivity extends Activity {
 		history.clear();		
 		intent = getIntent();
 		remoteUsername = intent.getStringExtra("remoteUsername");
+		user = remoteUsername;
 		priva = intent.getBooleanExtra("priva", false);
 		privacy = priva? "p" : "n";
 		enterBtn = (Button)findViewById(R.id.send_btn);
@@ -87,7 +100,7 @@ public class ChatEntryActivity extends Activity {
 		
 		editText1 = (EditText) findViewById(R.id.ipad);	
 		
-		//setContactImage();
+		setContactImage();
 		setContactStatus();
 
 		lv = (ListView) findViewById(R.id.listView1);
@@ -629,5 +642,113 @@ public class ChatEntryActivity extends Activity {
 		Log.d("ChatEntryActivity","OnPause() has been called");
 		remoteUsername = null;	
 		isRunning = false;
+	}
+	
+  	public void ClipBtn(MenuItem item){
+
+  		final CharSequence[] items = {
+                "Open Gallery", "Take a Picture"
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(R.drawable.ic_launcher);
+        builder.setTitle("Make your selection!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                // Do something with the selection
+            	if(item == 0){
+            		Log.d("ChatEntryActivity", "GalleryBtn has been pressed");
+            	    Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/*");
+                    startActivityForResult(Intent.createChooser(intent, "Select File"), 1);
+            	}
+            	
+            	if(item == 1){
+            		Log.d("ChatEntryActivity", "CameraBtn has been pressed");
+            		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            		if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            			takeWithCamera = true;
+            			startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            		}
+            	}
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+	
+	}
+
+  //Obtiene los datos que retorna el intent al tomar la foto.
+  	@Override
+  	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+  		Log.d("OptionsActivity", "requestCode: "+ requestCode + ". resultCode: " + resultCode);
+  			
+  		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  		String date = sdf.format(new Date());
+  		
+  		
+  		if(resultCode==0){
+  			takeWithCamera = false;
+  		}
+  			
+  		if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && takeWithCamera) {
+  			Log.i("OptionsActivity", "Tomada desde la camara");
+  				
+  			takeWithCamera = false;
+  			
+  	
+  			// Find the last picture
+  			String[] projection = new String[]{
+  			    MediaStore.Images.ImageColumns._ID,
+  			    MediaStore.Images.ImageColumns.DATA,
+  			    MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
+  			    MediaStore.Images.ImageColumns.DATE_TAKEN,
+  			    MediaStore.Images.ImageColumns.MIME_TYPE
+  			    };
+  			final Cursor cursor = getContentResolver()
+  			        .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null, 
+  			               null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
+
+  			// Put it in the image view
+  			if (cursor.moveToFirst()) {
+  			    String imageLocation = cursor.getString(1);
+  			    File imageFile = new File(imageLocation);
+  			    if (imageFile.exists()) {   // TODO: is there a better way to do this?
+  			    	
+  			    	((Connect) this.getApplication()).fileTransfer(imageLocation, user);
+  			    }
+  			} 
+  		    
+  		}else if( requestCode == 1 && resultCode == RESULT_OK && !takeWithCamera) {
+  		    	
+  		    Log.i("OptionActivity", "Tomada desde la galleria de fotos");
+  		    	
+  		    //Aqui esta la Direccion
+  		    Uri selectedImageUri = data.getData();
+  		    String tempPath = getPath(selectedImageUri, this);         
+  	        Log.d("OptionActivity", "Path: " + getPath(selectedImageUri, this));
+  	              
+  		  ((Connect) this.getApplication()).fileTransfer(tempPath, user);
+  		  Toast.makeText(context,
+					"Image was sent successfully", Toast.LENGTH_LONG)
+					.show();
+
+  		}
+  	}
+  		
+  	public String getPath(Uri uri, Activity activity) {
+  		
+          String[] projection = { MediaColumns.DATA };
+  	    Cursor cursor = activity.getContentResolver().query(uri, projection, null, null, null);
+  	    int column_index = cursor.getColumnIndexOrThrow(MediaColumns.DATA);
+  	    cursor.moveToFirst();
+  	    return cursor.getString(column_index);
+  	}
+  	
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.chat_entry, menu);
+		return true;
 	}
 }

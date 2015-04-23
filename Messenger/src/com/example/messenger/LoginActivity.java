@@ -37,7 +37,7 @@ public class LoginActivity extends ActionBarActivity {
     public static boolean isRunning;
     public static SharedPreferences pref;
     public static Activity loginActivity;
-    public static String localIP = "jmando01.ddns.net";
+    public static String localIP = "10.0.0.4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,7 @@ public class LoginActivity extends ActionBarActivity {
         isRunning = true; 
         checkbox = (CheckBox) findViewById(R.id.remember);
         signInTrouble = (TextView) findViewById(R.id.signInTrouble);
-        signInTrouble.setText("Having trouble signing in?");
+        signInTrouble.setText("Having issues signing in?");
         context = this;
         setTitle("Priva Messenger");
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

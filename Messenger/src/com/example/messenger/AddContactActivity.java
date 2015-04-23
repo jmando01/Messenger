@@ -341,7 +341,6 @@ public class AddContactActivity extends Activity {
 			}
 			
 		}else{
-			progress.dismiss();
 			Toast.makeText(getApplicationContext(), "There is no connection, wait for reconnection...",
 		    Toast.LENGTH_LONG).show();
 		}	

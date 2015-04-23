@@ -92,6 +92,7 @@ public class Connect extends Application {
 	public static boolean DayMillis;
 	public String actualTime;
 	
+	private Bitmap tempBitmap = null;
 	private Connection dbconn;
 	private String DBUSERNAME = "openfire";
 	private String DBPASSWORD = "1234";
@@ -165,6 +166,46 @@ public class Connect extends Application {
 				roster = connection.getRoster();
 				
 				Log.d("Connect",  "Roster subscription mode set to: " + roster.getSubscriptionMode());
+			
+				
+				mHandler.post(new Runnable() {
+ 	                public void run() {
+ 	                	
+ 	                	String state = new String();
+ 	                	state = "Online";
+        			
+ 	                	Log.d("Connect RS","DEBEDERIA APARECER");
+ 	                	if(ChatListActivity.isRunning == true){
+ 	                		String ChatList = new String();
+ 	                		ChatList = "Chat List";
+ 	                		Log.d("Connect RS","ChatListActivity is running");
+ 	                		ChatListActivity.updateGlobal(ChatList);
+                		
+ 	                	}	
+                	
+ 	                	if(ChatEntryActivity.isRunning == true && roster.getPresence(ChatEntryActivity.remoteUsername).getStatus() != null ){
+ 	                		Log.d("Connect RS","ChatEntryActivity is running");
+ 	                		state = roster.getPresence(ChatEntryActivity.remoteUsername).getStatus().toString();
+ 	                		ChatEntryActivity.updateGlobal(state);	
+
+ 	                	}
+                	
+ 	                	if(ChatEntryActivity.isRunning == true && roster.getPresence(ChatEntryActivity.remoteUsername).getStatus() == null ){
+ 	                		Log.d("Connect RS","ChatEntryActivity is running");
+ 	                		state = "Offline";
+ 	                		ChatEntryActivity.updateGlobal(state);
+
+ 	                	}
+                	
+ 	                	if(StatusActivity.isRunning == true){
+ 	                		Log.d("Connect RS","StatusActivity is running");
+ 	                		StatusActivity.updateStatus(LoginActivity.pref.getString("state", "Online"));
+            		
+ 	                	}
+ 	                }
+	                	
+ 	              	});
+				
     	   
      	   
 			} catch (XMPPException ex) {
@@ -354,8 +395,10 @@ public class Connect extends Application {
 			  public void run() {
 			
 				Log.d("Connect","Reconnection Timer Started");
+
 			    conn();
-			    if(connection.isConnected() == true){
+			   
+			    /*if(Connect.connectionStatus == true){
 			    	
 			    	mHandler.post(new Runnable() {
 	 	                public void run() {
@@ -363,9 +406,10 @@ public class Connect extends Application {
 	 	                	String state = new String();
 	 	                	state = "Online";
 	        			
-	        			
+	 	                	Log.d("Connect RS","DEBEDERIA APARECER");
 	 	                	if(ChatListActivity.isRunning == true){
-	 	                		String ChatList = "Chat List";
+	 	                		String ChatList = new String();
+	 	                		ChatList = "Chat List";
 	 	                		Log.d("Connect RS","ChatListActivity is running");
 	 	                		ChatListActivity.updateGlobal(ChatList);
 	                		
@@ -393,7 +437,7 @@ public class Connect extends Application {
 	 	                }
  	                	
 	 	              	});
-			    	}
+			    	}*/
 			  }
 			}, 12*1000);
 	}
@@ -459,7 +503,8 @@ public class Connect extends Application {
 	 	        			
 	 	        			
 	 	              if(ChatListActivity.isRunning == true){
-	 	            	  String ChatList = "Chat List";
+	 	            	  String ChatList = new String();
+	 	            	  ChatList= "Chat List";
 	 	                		Log.d("Connect RS","ChatListActivity is running");
 	 	                		ChatListActivity.updateGlobal(ChatList);
 	 	                		
@@ -592,7 +637,7 @@ public class Connect extends Application {
 		 });
 	}
 	
-	public void fileTransfer(String filenameWithPath, String contact){
+	public void fileTransfer(String filenameWithPath, String contact) {
 		
 		FileTransferManager manager = new FileTransferManager(connection);
 		OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer(contact+"/Smack");
@@ -1824,7 +1869,6 @@ public void DBDeleteMessage(String date){
 						Blob b = resultado.getBlob(2);
 						barr = new byte[(int)b.length()];//an array is created but contains no data
 						barr = b.getBytes(1,(int)b.length());
-						
 						/*FileOutputStream fout = new FileOutputStream("/storage/emulated/0/DCIM/Camera/testout.JPG");
 						fout.write(barr);
 								    
@@ -1838,11 +1882,15 @@ public void DBDeleteMessage(String date){
 				
 				DatabaseHandler db = new DatabaseHandler(this);
 				Photo photo = new Photo(username, Bitmap.createScaledBitmap(convertBlobToBitmap(barr), 300, 350, true), lastupdate );
+				tempBitmap.recycle();
 				Log.d("Connect","Deleting user: " + username + " from internal DB");
 				db.deletePhotoByUserName(username);
 				Log.d("Connect","Adding photo  to local DB");
 				db.addPhoto(photo);
 				db.close();
+				resultado.close();
+				st.close();
+				con.close();
 							
 				}catch (Exception e) {
 					Log.d("Connect","An error occurr while downloading image from external DB");
@@ -1854,7 +1902,7 @@ public void DBDeleteMessage(String date){
 		
 		
 		public Bitmap convertBlobToBitmap(byte[] blobByteArray){       
-		      Bitmap tempBitmap=null;        
+		      
 		      if(blobByteArray!=null)
 		      tempBitmap = BitmapFactory.decodeByteArray(blobByteArray, 0, blobByteArray.length);
 		      Log.d("Byte[] a Bitmap", "Byte "+blobByteArray);

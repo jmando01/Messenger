@@ -33,6 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/signupEmail"
+        android:layout_alignRight="@+id/signupEmail"
         android:layout_below="@+id/email"
         android:layout_marginTop="24dp"
         android:gravity="center"

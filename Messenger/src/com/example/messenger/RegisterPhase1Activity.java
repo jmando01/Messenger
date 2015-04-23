@@ -20,6 +20,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -55,8 +56,8 @@ public class RegisterPhase1Activity extends ActionBarActivity {
 		
 		signupEmail = (TextView) findViewById(R.id.signupEmail);
 		signupPolicy = (TextView) findViewById(R.id.signupPolicy);
-		signupEmail.setText(Html.fromHtml("Make sure you correctly enter you email address as this will be used in the future to recover your password if you forget and receive important information about our services.")); 
-		signupPolicy.setText(Html.fromHtml("By creating an account, you agree to the <a href=\"http://privamessenger.byethost16.com/termsofservice.html\">Terms of Service </a> and you acknowledge that you have read the <a href=\"http://privamessenger.byethost16.com/privacypolicy.html\">Privacy Policy</a>."));
+		signupEmail.setText(Html.fromHtml("Make sure you correctly enter you email address as this will be used in the future to recover your password if you forget, aswell to receive important information about our services.")); 
+		signupPolicy.setText(Html.fromHtml("By creating an account you agree to the <a href=\"http://privamessenger.byethost16.com/termsofservice.html\">Terms of Service </a> and you acknowledge that you have read the <a href=\"http://privamessenger.byethost16.com/privacypolicy.html\">Privacy Policy</a>."));
 		signupPolicy.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 	

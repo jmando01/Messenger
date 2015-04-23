@@ -88,6 +88,6 @@
         android:layout_below="@+id/remember"
         android:clickable="true"
         android:onClick="signInTrouble"
-        android:text="Having trouble signing in?" />
+        android:text="Having issues signing in?" />
 
 </RelativeLayout>

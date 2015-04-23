@@ -329,7 +329,7 @@ public class OptionsActivity extends Activity {
 	        progress = new ProgressDialog(this);
 		    progress.setMessage("Wait while loading profile image...");
 		    progress.show();
-	        
+		    
 		    UpdloadThreat(tempPath, date);
 
 		}
